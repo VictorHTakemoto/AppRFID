@@ -1,7 +1,6 @@
 package com.honeywell.rfidsimpleexample;
 
 import android.app.ProgressDialog;
-import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
@@ -24,8 +23,6 @@ import com.honeywell.rfidservice.rfid.TagAdditionData;
 import com.honeywell.rfidservice.rfid.TagReadData;
 import com.honeywell.rfidservice.rfid.TagReadOption;
 
-import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,7 +51,7 @@ public class ReadActivity extends AppCompatActivity {
         mReader = MyApplication.getInstance().mRfidReader;
         setContentView(R.layout.activity_read);
         mBtnRead = findViewById(R.id.btn_read);
-        mBtnWriteTag = findViewById(R.id.write_tag);
+        //mBtnWriteTag = findViewById(R.id.write_tag);
         mLv = findViewById(R.id.lv);
         mAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, mTagDataList);
         mLv.setAdapter(mAdapter);
@@ -241,7 +238,8 @@ public class ReadActivity extends AppCompatActivity {
         return padded.toString();
     }
 
-    public void checkLengthToWrite(View view) {
+    //Botão WriteTag Desativado
+    /*public void checkLengthToWrite(View view) {
         int duration = Toast.LENGTH_LONG;
         try {
             String tagToCheck = mData.getText().toString();
@@ -252,17 +250,17 @@ public class ReadActivity extends AppCompatActivity {
                 char padChar = '0';
                 String tagCheck = padLeft(tagToCheck, size, padChar);
                 //Desativado para validar
-           /* if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
                 byte[] getBytes = tagCheck.getBytes(StandardCharsets.UTF_8);
                 String hexa = new BigInteger(1, getBytes).toString(16);
                 mWaitDialog = ProgressDialog.show(this, null, hexa);
-            }*/
+            }
             }
         } catch (Exception exception) {
             Toast toast = Toast.makeText(getApplicationContext(), "Exceção gerada: " + exception.getMessage(), duration);
             toast.show();
         }
-    }
+    }*/
 
     private void writeTagData(String epc, int bank, int startAddr, String data) {
         int duration = Toast.LENGTH_LONG;

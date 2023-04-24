@@ -26,13 +26,13 @@
                 android:onClick="clickBtnRead"
                 android:text="Read"/>
 
-            <Button
+            <!--<Button
                 android:id="@+id/write_tag"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:onClick="checkLengthToWrite"
-                android:text="Write tag" />
+                android:text="Write tag" />-->
         </LinearLayout>
     </LinearLayout>
     <ListView

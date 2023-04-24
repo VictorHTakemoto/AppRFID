@@ -23,7 +23,6 @@
             </intent-filter>
         </activity>
         <activity android:name=".ReadActivity"></activity>
-        <activity android:name=".WriteTag"></activity>
     </application>
 
 </manifest>
