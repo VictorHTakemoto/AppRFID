@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <LinearLayout
+        android:id="@+id/edit_tag_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <EditText
+            android:id="@+id/select_tag"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Selecione tag epc" />
+
+        <EditText
+            android:id="@+id/data_field"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Data">
+
+        </EditText>
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/layout_btn_edit"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal"
+        android:padding="10dp"
+        >
+        <Button
+            android:id="@+id/btn_read_tag"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="#69a4f0"
+            android:textColor="#F2F2F2"
+            android:text="READ"
+            android:onClick="teste">
+        </Button>
+
+        <Button
+            android:id="@+id/btn_write"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="write"
+            android:background="#F2F2F2">
+        </Button>
+    </LinearLayout>
+</RelativeLayout>
