@@ -1,10 +1,12 @@
 package com.honeywell.rfidsimpleexample;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -38,11 +40,12 @@ public class ReadActivity extends AppCompatActivity {
     private Button mBtnRead;
     private ListView mLv;
     private ArrayAdapter mAdapter;
-    private Button mBtnWriteTag;
+    //private Button mBtnWriteTag;
     private int mSelectedIdx = -1;
     private TextView mTagToWrite;
     private TextView mData;
-    private ProgressDialog mWaitDialog;
+    //private TextView mToastCustom;
+    //private ProgressDialog mWaitDialog;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -59,6 +62,23 @@ public class ReadActivity extends AppCompatActivity {
         mTagToWrite = findViewById(R.id.select_tag);
         mData = findViewById(R.id.data_field);
         mData.requestFocus();
+        //mToastCustom = findViewById(R.id.toast_text);
+        //mRfidMgr.setBeeper(true, 100, 100);
+    }
+
+    public class CustomToast extends Toast {
+        public CustomToast(Context context, String message) {
+            super(context);
+
+            LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            View view = inflater.inflate(R.layout.toast_custom, null);
+
+            TextView textView = view.findViewById(R.id.toast_text);
+            textView.setText(message);
+
+            setView(view);
+            setDuration(Toast.LENGTH_LONG);
+        }
     }
 
     @Override
@@ -153,12 +173,14 @@ public class ReadActivity extends AppCompatActivity {
                     }
                     else
                     {
-                        int size = 25;
-                        char padChar = '0';
+                        int size = 24;
                         int bank = 1;
                         int startAddress = 2;
-                        String dataToWrite = padLeft(checkFieldData, size, padChar);
-                        writeTagData(checkFieldEpc, bank, startAddress, dataToWrite);
+                        String verifyData = checkFieldData.trim().replaceAll("\n", "");
+                        String dataToWrite = padLeft(verifyData, size);
+                        CustomToast customToast = new CustomToast(getApplicationContext(), dataToWrite);
+                        customToast.show();
+                        //writeTagData(checkFieldEpc, bank, startAddress, dataToWrite);
                         //Toast toast = Toast.makeText(getApplicationContext(), dataToWrite, duration);
                         //toast.show();
                     }
@@ -171,6 +193,11 @@ public class ReadActivity extends AppCompatActivity {
         }
     };
 
+    /*public void checkList() {
+        int tamanho = mTagDataList.size();
+        CustomToast customToast = new CustomToast(getApplicationContext(), );
+    }*/
+
     private boolean isReaderAvailable() {
         return mReader != null && mReader.available();
     }
@@ -180,6 +207,7 @@ public class ReadActivity extends AppCompatActivity {
             mTagDataList.clear();
             mReader.setOnTagReadListener(dataListener);
             mReader.read(TagAdditionData.get("None"), new TagReadOption());
+            mRfidMgr.setBeeper(true, 1, 2);
         }
     }
 
@@ -187,6 +215,7 @@ public class ReadActivity extends AppCompatActivity {
         if (isReaderAvailable()) {
             mReader.stopRead();
             mReader.removeOnTagReadListener(dataListener);
+            mRfidMgr.setBeeper(false, 1, 2);
         }
     }
 
@@ -230,12 +259,14 @@ public class ReadActivity extends AppCompatActivity {
         }
     };
 
-    public String padLeft(String str, int size, char padChar) {
-        StringBuilder padded = new StringBuilder(str);
-        while (padded.length() < size) {
-            padded.insert(0, padChar);
+    public String padLeft(String str, int size) {
+        if (str.length() <= size) {
+            int zeroToAdd = size - str.length();
+            for(int i = 0; i < zeroToAdd; i++) {
+                str = "0" + str;
+            }
         }
-        return padded.toString();
+        return str;
     }
 
     //Botão WriteTag Desativado
@@ -276,4 +307,7 @@ public class ReadActivity extends AppCompatActivity {
         }
     }
 
+    private void cleanData(){
+
+    }
 }
