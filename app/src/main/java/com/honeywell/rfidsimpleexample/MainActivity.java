@@ -75,16 +75,6 @@ public class MainActivity extends AppCompatActivity {
 
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         requestPermissions();
-
-        /*LinearLayout linearLayout = findViewById(R.id.layout_btn);
-        ImageView imageView = new ImageView(this);
-        imageView.setImageResource(R.drawable.ic_launcher_sem_fundo);
-        linearLayout.addView(imageView);
-        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-        );
-        imageView.setLayoutParams(layoutParams);*/
     }
 
     @Override

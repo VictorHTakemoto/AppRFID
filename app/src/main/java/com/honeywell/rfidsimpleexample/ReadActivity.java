@@ -38,14 +38,12 @@ public class ReadActivity extends AppCompatActivity {
 
     private boolean mIsReadBtnClicked;
     private Button mBtnRead;
+    private Button mBtnClear;
     private ListView mLv;
     private ArrayAdapter mAdapter;
-    //private Button mBtnWriteTag;
     private int mSelectedIdx = -1;
     private TextView mTagToWrite;
     private TextView mData;
-    //private TextView mToastCustom;
-    //private ProgressDialog mWaitDialog;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -54,7 +52,7 @@ public class ReadActivity extends AppCompatActivity {
         mReader = MyApplication.getInstance().mRfidReader;
         setContentView(R.layout.activity_read);
         mBtnRead = findViewById(R.id.btn_read);
-        //mBtnWriteTag = findViewById(R.id.write_tag);
+        mBtnClear = findViewById(R.id.clear_fields);
         mLv = findViewById(R.id.lv);
         mAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, mTagDataList);
         mLv.setAdapter(mAdapter);
@@ -62,24 +60,9 @@ public class ReadActivity extends AppCompatActivity {
         mTagToWrite = findViewById(R.id.select_tag);
         mData = findViewById(R.id.data_field);
         mData.requestFocus();
-        //mToastCustom = findViewById(R.id.toast_text);
-        //mRfidMgr.setBeeper(true, 100, 100);
     }
 
-    public class CustomToast extends Toast {
-        public CustomToast(Context context, String message) {
-            super(context);
 
-            LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            View view = inflater.inflate(R.layout.toast_custom, null);
-
-            TextView textView = view.findViewById(R.id.toast_text);
-            textView.setText(message);
-
-            setView(view);
-            setDuration(Toast.LENGTH_LONG);
-        }
-    }
 
     @Override
     protected void onResume() {
@@ -141,7 +124,6 @@ public class ReadActivity extends AppCompatActivity {
         @Override
         public void onRfidTriggered(boolean trigger)
         {
-            int duration = Toast.LENGTH_LONG;
             String checkFieldEpc = mTagToWrite.getText().toString();
             String checkFieldData = mData.getText().toString();
             if (mIsReadBtnClicked || !trigger)
@@ -168,8 +150,8 @@ public class ReadActivity extends AppCompatActivity {
                 {
                     if(checkFieldData.isEmpty() || checkFieldData == null)
                     {
-                        Toast toast = Toast.makeText(getApplicationContext(), "Leia um codigo de barras", duration);
-                        toast.show();
+                        CustomToast customToast = new CustomToast(getApplicationContext(), "Leia um codigo de barras");
+                        customToast.show();
                     }
                     else
                     {
@@ -178,11 +160,7 @@ public class ReadActivity extends AppCompatActivity {
                         int startAddress = 2;
                         String verifyData = checkFieldData.trim().replaceAll("\n", "");
                         String dataToWrite = padLeft(verifyData, size);
-                        CustomToast customToast = new CustomToast(getApplicationContext(), dataToWrite);
-                        customToast.show();
-                        //writeTagData(checkFieldEpc, bank, startAddress, dataToWrite);
-                        //Toast toast = Toast.makeText(getApplicationContext(), dataToWrite, duration);
-                        //toast.show();
+                        writeTagData(checkFieldEpc, bank, startAddress, dataToWrite);
                     }
                 }
             }
@@ -193,11 +171,6 @@ public class ReadActivity extends AppCompatActivity {
         }
     };
 
-    /*public void checkList() {
-        int tamanho = mTagDataList.size();
-        CustomToast customToast = new CustomToast(getApplicationContext(), );
-    }*/
-
     private boolean isReaderAvailable() {
         return mReader != null && mReader.available();
     }
@@ -207,6 +180,7 @@ public class ReadActivity extends AppCompatActivity {
             mTagDataList.clear();
             mReader.setOnTagReadListener(dataListener);
             mReader.read(TagAdditionData.get("None"), new TagReadOption());
+            checkList();
             mRfidMgr.setBeeper(true, 1, 2);
         }
     }
@@ -269,45 +243,65 @@ public class ReadActivity extends AppCompatActivity {
         return str;
     }
 
-    //Botão WriteTag Desativado
-    /*public void checkLengthToWrite(View view) {
-        int duration = Toast.LENGTH_LONG;
-        try {
-            String tagToCheck = mData.getText().toString();
-            if (tagToCheck.isEmpty() || tagToCheck == null) {
-                mWaitDialog = ProgressDialog.show(this, null, "Leia um codigo de barras");
-            } else {
-                int size = 25;
-                char padChar = '0';
-                String tagCheck = padLeft(tagToCheck, size, padChar);
-                //Desativado para validar
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
-                byte[] getBytes = tagCheck.getBytes(StandardCharsets.UTF_8);
-                String hexa = new BigInteger(1, getBytes).toString(16);
-                mWaitDialog = ProgressDialog.show(this, null, hexa);
-            }
-            }
-        } catch (Exception exception) {
-            Toast toast = Toast.makeText(getApplicationContext(), "Exceção gerada: " + exception.getMessage(), duration);
-            toast.show();
-        }
-    }*/
-
     private void writeTagData(String epc, int bank, int startAddr, String data) {
         int duration = Toast.LENGTH_LONG;
         try {
             mReader.writeTagData(epc, bank, startAddr, null, data);
             mTagToWrite.setText("");
             mData.setText("");
-            Toast toast = Toast.makeText(getApplicationContext(), "Tag gravada com sucesso", duration);
-            toast.show();
+            CustomToast customToast = new CustomToast(getApplicationContext(), "Tag gravada");
+            customToast.show();
         } catch (RfidReaderException e) {
-            Toast toast = Toast.makeText(getApplicationContext(), "Não foi posivel gravar a tag,: " + e.getMessage(), duration);
-            toast.show();
+            CustomToast customToast = new CustomToast(getApplicationContext(), "Não foi possível gravar a tag: " + e.getMessage());
+            customToast.show();
         }
     }
 
-    private void cleanData(){
+    public class CustomToast extends Toast {
+        public CustomToast(Context context, String message) {
+            super(context);
 
+            LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            View view = inflater.inflate(R.layout.toast_custom, null);
+
+            TextView textView = view.findViewById(R.id.toast_text);
+            textView.setText(message);
+
+            setView(view);
+            setDuration(Toast.LENGTH_LONG);
+        }
+    }
+
+    public void checkList() {
+        if(!mTagDataList.isEmpty()) {
+            String getFirstValue = String.valueOf(mTagDataList.get(0));
+            mTagToWrite.setText(getFirstValue);
+        }
+    }
+
+    public void cleanField(View view){
+        String clearTag = mTagToWrite.getText().toString();
+        String clearData = mData.getText().toString();
+        try {
+            if(!clearTag.isEmpty() || !clearData.isEmpty()){
+                mTagToWrite.setText("");
+                mData.setText("");
+                mTagDataList.clear();
+            }
+            if (!clearTag.isEmpty()) {
+                mTagToWrite.setText("");
+                mTagDataList.clear();
+            }
+            if (!clearData.isEmpty()) {
+                mData.setText("");
+                mTagDataList.clear();
+            } else {
+                CustomToast customToast = new CustomToast(getApplicationContext(), "Campos limpos");
+                customToast.show();
+            }
+        } catch (Exception ex) {
+            CustomToast customToast = new CustomToast(getApplicationContext(), "Exceção: " + ex);
+            customToast.show();
+        }
     }
 }
