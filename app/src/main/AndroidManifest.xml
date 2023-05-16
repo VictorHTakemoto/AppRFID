@@ -10,9 +10,9 @@
     <application
         android:name=".MyApplication"
         android:allowBackup="true"
-        android:icon="@drawable/ic_launcher_onium"
+        android:icon="@drawable/ic_launcher_sem_fundo"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_logo_branco_fundo_preto"
+        android:roundIcon="@mipmap/ic_launcher_sem_fundo"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity

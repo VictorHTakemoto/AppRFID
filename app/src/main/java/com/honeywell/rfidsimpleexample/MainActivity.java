@@ -19,8 +19,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -34,6 +32,7 @@ import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -75,6 +74,7 @@ public class MainActivity extends AppCompatActivity {
 
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         requestPermissions();
+
     }
 
     @Override
@@ -129,15 +129,15 @@ public class MainActivity extends AppCompatActivity {
         mTvInfo.setTextColor(Color.rgb(128, 128, 128));
 
         if (isConnected()) {
-            mTvInfo.setText(mMyApplication.macAddress + " connected.");
+            mTvInfo.setText(mMyApplication.macAddress + " conectado.");
             mTvInfo.setTextColor(Color.rgb(0, 128, 0));
             mBtnConnect.setEnabled(true);
-            mBtnConnect.setText("Disconnect");
+            mBtnConnect.setText("Desconectar");
             mBtnCreateReader.setEnabled(true);
         } else {
-            mTvInfo.setText("Device not connected.");
+            mTvInfo.setText("Dispositivo não conectado.");
             mBtnConnect.setEnabled(mSelectedIdx != -1);
-            mBtnConnect.setText("Connect");
+            mBtnConnect.setText("Conectar");
             mBtnCreateReader.setEnabled(false);
         }
     }
@@ -166,7 +166,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }, 1000);
 
-        mWaitDialog = ProgressDialog.show(this, null, "Creating reader...");
+        mWaitDialog = ProgressDialog.show(this, null, "Criando leitor...");
     }
 
     private void scan() {
@@ -179,7 +179,7 @@ public class MainActivity extends AppCompatActivity {
         mAdapter.notifyDataSetChanged();
         mBluetoothAdapter.startLeScan(mLeScanCallback);
 
-        mWaitDialog = ProgressDialog.show(this, null, "Scanning Bluetooth devices...");
+        mWaitDialog = ProgressDialog.show(this, null, "Verificando dispositivos Bluetooth...");
         mWaitDialog.setCancelable(false);
 
         mHandler.postDelayed(new Runnable() {
@@ -202,7 +202,7 @@ public class MainActivity extends AppCompatActivity {
 
         mRfidMgr.addEventListener(mEventListener);
         mRfidMgr.connect(mDevices.get(mSelectedIdx).dev.getAddress());
-        mWaitDialog = ProgressDialog.show(this, null, "Connecting...");
+        mWaitDialog = ProgressDialog.show(this, null, "Conectando...");
     }
 
     private void disconnect() {

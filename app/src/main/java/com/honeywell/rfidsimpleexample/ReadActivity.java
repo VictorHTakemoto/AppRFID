@@ -3,10 +3,13 @@ package com.honeywell.rfidsimpleexample;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.drawable.RippleDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -30,6 +33,7 @@ import java.util.List;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 public class ReadActivity extends AppCompatActivity {
     private RfidManager mRfidMgr;
@@ -60,9 +64,8 @@ public class ReadActivity extends AppCompatActivity {
         mTagToWrite = findViewById(R.id.select_tag);
         mData = findViewById(R.id.data_field);
         mData.requestFocus();
+
     }
-
-
 
     @Override
     protected void onResume() {
@@ -88,6 +91,12 @@ public class ReadActivity extends AppCompatActivity {
             mBtnRead.setTextColor(Color.rgb(0, 0, 0));
         }
     }
+
+    /*@Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_settings, menu);
+        return super.onCreateOptionsMenu(menu);
+    }*/
 
     //Navegação de telas, desativado para validação
     /*public void WriteTag(View view) {
@@ -180,13 +189,13 @@ public class ReadActivity extends AppCompatActivity {
             mTagDataList.clear();
             mReader.setOnTagReadListener(dataListener);
             mReader.read(TagAdditionData.get("None"), new TagReadOption());
-            checkList();
             mRfidMgr.setBeeper(true, 1, 2);
         }
     }
 
     private void stopRead() {
         if (isReaderAvailable()) {
+            checkList();
             mReader.stopRead();
             mReader.removeOnTagReadListener(dataListener);
             mRfidMgr.setBeeper(false, 1, 2);
@@ -249,6 +258,8 @@ public class ReadActivity extends AppCompatActivity {
             mReader.writeTagData(epc, bank, startAddr, null, data);
             mTagToWrite.setText("");
             mData.setText("");
+            mTagDataList.clear();
+            stopRead();
             CustomToast customToast = new CustomToast(getApplicationContext(), "Tag gravada");
             customToast.show();
         } catch (RfidReaderException e) {
@@ -274,8 +285,10 @@ public class ReadActivity extends AppCompatActivity {
 
     public void checkList() {
         if(!mTagDataList.isEmpty()) {
-            String getFirstValue = String.valueOf(mTagDataList.get(0));
-            mTagToWrite.setText(getFirstValue);
+            if(mTagDataList.size() == 1) {
+                String getFirstValue = String.valueOf(mTagDataList.get(0));
+                mTagToWrite.setText(getFirstValue);
+            }
         }
     }
 
@@ -283,19 +296,14 @@ public class ReadActivity extends AppCompatActivity {
         String clearTag = mTagToWrite.getText().toString();
         String clearData = mData.getText().toString();
         try {
-            if(!clearTag.isEmpty() || !clearData.isEmpty()){
+            if (!clearData.isEmpty() || !clearTag.isEmpty() || !mTagDataList.isEmpty()) {
                 mTagToWrite.setText("");
-                mData.setText("");
-                mTagDataList.clear();
-            }
-            if (!clearTag.isEmpty()) {
-                mTagToWrite.setText("");
-                mTagDataList.clear();
-            }
-            if (!clearData.isEmpty()) {
+                mTagToWrite.invalidate();
+                mTagToWrite.requestLayout();
                 mData.setText("");
                 mTagDataList.clear();
             } else {
+                mTagDataList.clear();
                 CustomToast customToast = new CustomToast(getApplicationContext(), "Campos limpos");
                 customToast.show();
             }

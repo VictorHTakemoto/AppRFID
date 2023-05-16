@@ -4,11 +4,11 @@
     <item
         android:id="@+id/scan"
         android:title="Scan"
-        app:showAsAction="always" />
+        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/image_home"
-        android:title="teste"
-        android:icon="@mipmap/ic_launcher_logo_branco_fundo_preto"
+        android:title="onium"
+        android:icon="@mipmap/ic_launcher_onium"
         android:enabled="false"
         app:showAsAction="always" />
 </menu>

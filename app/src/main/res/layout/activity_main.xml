@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@drawable/background_gradient"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -22,6 +23,8 @@
                 android:id="@+id/btn_connect"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:background="@drawable/button_custom"
+                android:layout_marginRight="16dp"
                 android:layout_weight="1"
                 android:onClick="clickBtnConn" />
 
@@ -29,9 +32,10 @@
                 android:id="@+id/btn_create_reader"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:background="@drawable/button_custom"
                 android:layout_weight="1"
                 android:onClick="clickBtnCreateReader"
-                android:text="Create Reader" />
+                android:text="Criar Leitor" />
         </LinearLayout>
 
         <TextView
@@ -45,6 +49,8 @@
         android:id="@+id/lv"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/layout_btn" />
+        android:layout_above="@id/layout_btn"
+
+        />
 
 </RelativeLayout>
