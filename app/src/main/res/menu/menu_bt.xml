@@ -3,12 +3,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/scan"
-        android:title="Scan"
+        android:title="@string/scan"
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/image_home"
         android:title="onium"
-        android:icon="@mipmap/ic_launcher_onium"
+        android:icon="@drawable/ic_launcher_sem_fundo"
         android:enabled="false"
         app:showAsAction="always" />
 </menu>

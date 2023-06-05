@@ -3,6 +3,7 @@ package com.honeywell.rfidsimpleexample;
 import android.app.Application;
 
 import com.honeywell.rfidservice.RfidManager;
+import com.honeywell.rfidservice.rfid.AntennaPower;
 import com.honeywell.rfidservice.rfid.RfidReader;
 
 public class MyApplication extends Application {

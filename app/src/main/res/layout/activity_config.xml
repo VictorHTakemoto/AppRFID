@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/background_gradient">
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/antRead"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#000"
+            android:spinnerMode="dialog"
+            android:text="Sinal leitura"
+            android:textSize="20sp"
+            android:focusable="true" />
+
+        <Spinner
+            android:id="@+id/selectReadPower"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginStart="20dp"
+            android:layout_gravity="center"
+            android:textAlignment="center"
+            android:spinnerMode="dialog"
+            android:backgroundTint="@color/colorPrimaryDark"
+            />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/antReadPower"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/antId"
+        android:layout_marginBottom="12dp"
+        android:textColor="	#363636"
+        android:textSize="16sp"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/antWrite"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#000"
+            android:text="Sinal escrita"
+            android:clickable="true"
+            android:textSize="20sp"
+            android:focusable="true" />
+
+        <Spinner
+            android:id="@+id/selectWritePower"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:textAlignment="center"
+            android:spinnerMode="dialog"
+            android:layout_marginStart="15dp"/>
+
+    </LinearLayout>
+    <TextView
+        android:id="@+id/antWritePower"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/antId"
+        android:layout_marginBottom="12dp"
+        android:textColor="	#363636"
+        android:textSize="16sp"/>
+
+
+</LinearLayout>
+</RelativeLayout>

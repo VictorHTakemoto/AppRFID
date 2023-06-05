@@ -2,5 +2,6 @@
     <string name="app_name">ONIUM RFID</string>
     <string name="ok">Ok</string>
     <string name="cancel">Cancel</string>
+    <string name="scan">Scan</string>
     <string name="dialog_enable_location">To use Bluetooth, you need to enable location service first. Please click OK and enable it manually.</string>
 </resources>

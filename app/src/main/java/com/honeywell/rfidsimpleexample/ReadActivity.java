@@ -2,13 +2,16 @@ package com.honeywell.rfidsimpleexample;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.RippleDrawable;
+import android.hardware.TriggerEventListener;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
@@ -30,12 +33,15 @@ import com.honeywell.rfidservice.rfid.TagReadOption;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
-public class ReadActivity extends AppCompatActivity {
+public class ReadActivity extends AppCompatActivity
+{
     private RfidManager mRfidMgr;
     private RfidReader mReader;
     private List mTagDataList = new ArrayList();
@@ -50,7 +56,8 @@ public class ReadActivity extends AppCompatActivity {
     private TextView mData;
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         mRfidMgr = MyApplication.getInstance().rfidMgr;
         mReader = MyApplication.getInstance().mRfidReader;
@@ -68,47 +75,65 @@ public class ReadActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onResume() {
+    protected void onResume()
+    {
         super.onResume();
         mRfidMgr.addEventListener(mEventListener);
         showBtn();
     }
 
     @Override
-    protected void onPause() {
+    protected void onPause()
+    {
         super.onPause();
         mRfidMgr.removeEventListener(mEventListener);
         mIsReadBtnClicked = false;
         stopRead();
     }
 
-    private void showBtn() {
-        if (mIsReadBtnClicked) {
+    private void showBtn()
+    {
+        if (mIsReadBtnClicked)
+        {
             mBtnRead.setText("Stop");
             mBtnRead.setTextColor(Color.rgb(255, 128, 0));
-        } else {
+        } else
+        {
             mBtnRead.setText("Read");
             mBtnRead.setTextColor(Color.rgb(0, 0, 0));
         }
     }
 
-    /*@Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
         getMenuInflater().inflate(R.menu.menu_settings, menu);
         return super.onCreateOptionsMenu(menu);
-    }*/
+    }
 
     //Navegação de telas, desativado para validação
-    /*public void WriteTag(View view) {
-        Intent intent = new Intent(this, WriteTag.class);
-        startActivity(intent);
-    }*/
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item)
+    {
+        int itemId = item.getItemId();
+        if (itemId == R.id.settings_btn)
+        {
+            Intent intent = new Intent(this, ConfigActivity.class);
+            startActivity(intent);
+            //Toast.makeText(this, "Botão clicado", Toast.LENGTH_LONG).show();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
 
-    public void clickBtnRead(View view) {
-        if (mIsReadBtnClicked) {
+    public void clickBtnRead(View view)
+    {
+        if (mIsReadBtnClicked)
+        {
             mIsReadBtnClicked = false;
             stopRead();
-        } else {
+        } else
+        {
             mIsReadBtnClicked = true;
             read();
         }
@@ -117,17 +142,21 @@ public class ReadActivity extends AppCompatActivity {
     }
 
 
-    private EventListener mEventListener = new EventListener() {
+    private EventListener mEventListener = new EventListener()
+    {
         @Override
-        public void onDeviceConnected(Object o) {
+        public void onDeviceConnected(Object o)
+        {
         }
 
         @Override
-        public void onDeviceDisconnected(Object o) {
+        public void onDeviceDisconnected(Object o)
+        {
         }
 
         @Override
-        public void onReaderCreated(boolean b, RfidReader rfidReader) {
+        public void onReaderCreated(boolean b, RfidReader rfidReader)
+        {
         }
 
         @Override
@@ -148,21 +177,20 @@ public class ReadActivity extends AppCompatActivity {
                         showBtn();
                     }
                 });
-            }
-            else
+            } else
             {
                 if (checkFieldEpc.isEmpty() || checkFieldEpc == null)
                 {
                     read();
-                }
-                else
+                } else
                 {
-                    if(checkFieldData.isEmpty() || checkFieldData == null)
+                    if (checkFieldData.isEmpty() || checkFieldData == null)
                     {
+                        //onTriggerModeSwitched(TriggerMode.BARCODE_SCAN);
+                        //mRfidMgr.setTriggerMode(TriggerMode.BARCODE_SCAN);
                         CustomToast customToast = new CustomToast(getApplicationContext(), "Leia um codigo de barras");
                         customToast.show();
-                    }
-                    else
+                    } else
                     {
                         int size = 24;
                         int bank = 1;
@@ -176,16 +204,27 @@ public class ReadActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onTriggerModeSwitched(TriggerMode triggerMode) {
+        public void onTriggerModeSwitched(TriggerMode triggerMode)
+        {
         }
     };
 
-    private boolean isReaderAvailable() {
+    private boolean isReaderAvailable()
+    {
         return mReader != null && mReader.available();
     }
 
-    private void read() {
-        if (isReaderAvailable()) {
+    /*private void onReadBarCode() {
+        if(isReaderAvailable()) {
+            TriggerMode triggerMode = TriggerMode.BARCODE_SCAN;
+            System.out.println("Teste: " + triggerMode);
+        }
+    }*/
+
+    private void read()
+    {
+        if (isReaderAvailable())
+        {
             mTagDataList.clear();
             mReader.setOnTagReadListener(dataListener);
             mReader.read(TagAdditionData.get("None"), new TagReadOption());
@@ -193,8 +232,10 @@ public class ReadActivity extends AppCompatActivity {
         }
     }
 
-    private void stopRead() {
-        if (isReaderAvailable()) {
+    private void stopRead()
+    {
+        if (isReaderAvailable())
+        {
             checkList();
             mReader.stopRead();
             mReader.removeOnTagReadListener(dataListener);
@@ -202,14 +243,19 @@ public class ReadActivity extends AppCompatActivity {
         }
     }
 
-    private OnTagReadListener dataListener = new OnTagReadListener() {
+    private OnTagReadListener dataListener = new OnTagReadListener()
+    {
         @Override
-        public void onTagRead(final TagReadData[] t) {
-            synchronized (mTagDataList) {
-                for (TagReadData trd : t) {
+        public void onTagRead(final TagReadData[] t)
+        {
+            synchronized (mTagDataList)
+            {
+                for (TagReadData trd : t)
+                {
                     String epc = trd.getEpcHexStr();
 
-                    if (!mTagDataList.contains(epc)) {
+                    if (!mTagDataList.contains(epc))
+                    {
                         mTagDataList.add(epc);
                     }
                 }
@@ -219,12 +265,15 @@ public class ReadActivity extends AppCompatActivity {
         }
     };
 
-    private Handler mHandler = new Handler() {
+    private Handler mHandler = new Handler()
+    {
         @Override
-        public void handleMessage(Message msg) {
+        public void handleMessage(Message msg)
+        {
             super.handleMessage(msg);
 
-            switch (msg.what) {
+            switch (msg.what)
+            {
                 case 0:
                     mAdapter.notifyDataSetChanged();
                     break;
@@ -232,9 +281,11 @@ public class ReadActivity extends AppCompatActivity {
         }
     };
 
-    private AdapterView.OnItemClickListener mItemClickListenerTag = new AdapterView.OnItemClickListener() {
+    private AdapterView.OnItemClickListener mItemClickListenerTag = new AdapterView.OnItemClickListener()
+    {
         @Override
-        public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+        public void onItemClick(AdapterView<?> adapterView, View view, int position, long id)
+        {
             mSelectedIdx = position;
             mAdapter.notifyDataSetChanged();
             String selectedItem = (String) adapterView.getItemAtPosition(position);
@@ -242,19 +293,24 @@ public class ReadActivity extends AppCompatActivity {
         }
     };
 
-    public String padLeft(String str, int size) {
-        if (str.length() <= size) {
+    public String padLeft(String str, int size)
+    {
+        if (str.length() <= size)
+        {
             int zeroToAdd = size - str.length();
-            for(int i = 0; i < zeroToAdd; i++) {
+            for (int i = 0; i < zeroToAdd; i++)
+            {
                 str = "0" + str;
             }
         }
         return str;
     }
 
-    private void writeTagData(String epc, int bank, int startAddr, String data) {
+    private void writeTagData(String epc, int bank, int startAddr, String data)
+    {
         int duration = Toast.LENGTH_LONG;
-        try {
+        try
+        {
             mReader.writeTagData(epc, bank, startAddr, null, data);
             mTagToWrite.setText("");
             mData.setText("");
@@ -262,14 +318,17 @@ public class ReadActivity extends AppCompatActivity {
             stopRead();
             CustomToast customToast = new CustomToast(getApplicationContext(), "Tag gravada");
             customToast.show();
-        } catch (RfidReaderException e) {
+        } catch (RfidReaderException e)
+        {
             CustomToast customToast = new CustomToast(getApplicationContext(), "Não foi possível gravar a tag: " + e.getMessage());
             customToast.show();
         }
     }
 
-    public class CustomToast extends Toast {
-        public CustomToast(Context context, String message) {
+    public static class CustomToast extends Toast
+    {
+        public CustomToast(Context context, String message)
+        {
             super(context);
 
             LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -283,31 +342,39 @@ public class ReadActivity extends AppCompatActivity {
         }
     }
 
-    public void checkList() {
-        if(!mTagDataList.isEmpty()) {
-            if(mTagDataList.size() == 1) {
+    public void checkList()
+    {
+        if (!mTagDataList.isEmpty())
+        {
+            if (mTagDataList.size() == 1)
+            {
                 String getFirstValue = String.valueOf(mTagDataList.get(0));
                 mTagToWrite.setText(getFirstValue);
             }
         }
     }
 
-    public void cleanField(View view){
+    public void cleanField(View view)
+    {
         String clearTag = mTagToWrite.getText().toString();
         String clearData = mData.getText().toString();
-        try {
-            if (!clearData.isEmpty() || !clearTag.isEmpty() || !mTagDataList.isEmpty()) {
+        try
+        {
+            if (!clearData.isEmpty() || !clearTag.isEmpty() || !mTagDataList.isEmpty())
+            {
                 mTagToWrite.setText("");
                 mTagToWrite.invalidate();
                 mTagToWrite.requestLayout();
                 mData.setText("");
                 mTagDataList.clear();
-            } else {
+            } else
+            {
                 mTagDataList.clear();
                 CustomToast customToast = new CustomToast(getApplicationContext(), "Campos limpos");
                 customToast.show();
             }
-        } catch (Exception ex) {
+        } catch (Exception ex)
+        {
             CustomToast customToast = new CustomToast(getApplicationContext(), "Exceção: " + ex);
             customToast.show();
         }
