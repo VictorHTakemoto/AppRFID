@@ -63,7 +63,8 @@ public class ReadActivity extends AppCompatActivity
     private ArrayAdapter mAdapter;
     private int mSelectedIdx = -1;
     private TextView mTagToWrite;
-    private TextView mData;
+    //private TextView mData;
+    private TextView mChassiToValid;
     private String mChassiPrint;
     private String mChassiConf;
 
@@ -75,6 +76,7 @@ public class ReadActivity extends AppCompatActivity
 
         mRfidMgr = MyApplication.getInstance().rfidMgr;
         mReader = MyApplication.getInstance().mRfidReader;
+        mRfidMgr.setTriggerMode(TriggerMode.BARCODE_SCAN);
 
         mBtnRead = findViewById(R.id.btn_read);
         mBtnClear = findViewById(R.id.clear_fields);
@@ -87,8 +89,9 @@ public class ReadActivity extends AppCompatActivity
         mLv.setAdapter(mAdapter);
         mLv.setOnItemClickListener(mItemClickListenerTag);
         mTagToWrite = findViewById(R.id.select_tag);
-        mData = findViewById(R.id.data_field);
+        mChassiToValid = findViewById(R.id.data_field);
         mTagToWrite.requestFocus();
+        mChassiToValid.setVisibility(View.INVISIBLE);
 
 
         mBtnRead.setOnClickListener(new View.OnClickListener() {
@@ -114,15 +117,44 @@ public class ReadActivity extends AppCompatActivity
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
+                String chassis = charSequence.toString();
+                String texto1 = mTagToWrite.getText().toString();
+                if(!texto1.isEmpty()){
+                    if((mTagToWrite.length() <= 17)){
+                        new callAPITask().execute(mChassiPrint, chassis);
+                        mTagToWrite.setText("");
+                        mRfidMgr.setTriggerMode(TriggerMode.RFID);
+                    }
+                    else {
+                        new callAPITask().execute(mChassiConf, chassis);
+                        mTagToWrite.setText("");
+                        mRfidMgr.setTriggerMode(TriggerMode.BARCODE_SCAN);
+                    }
+                }
             }
 
             @Override
             public void afterTextChanged(Editable editable) {
-                String txt = editable.toString();
-                new callAPITask().execute(mChassiConf, txt);
             }
         });
+
+//        mChassiToValid.addTextChangedListener(new TextWatcher() {
+//            @Override
+//            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+//
+//            }
+//
+//            @Override
+//            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+//
+//            }
+//
+//            @Override
+//            public void afterTextChanged(Editable editable) {
+//                String txt = editable.toString();
+//                new callAPITask().execute(mChassiConf, txt);
+//            }
+//        });
     }
 
     @Override
@@ -220,7 +252,7 @@ public class ReadActivity extends AppCompatActivity
         public void onRfidTriggered(boolean trigger)
         {
             String checkFieldEpc = mTagToWrite.getText().toString();
-            String checkFieldData = mData.getText().toString();
+            String checkFieldData = mChassiToValid.getText().toString();
             if (mIsReadBtnClicked || !trigger)
             {
                 mIsReadBtnClicked = false;
@@ -236,28 +268,14 @@ public class ReadActivity extends AppCompatActivity
                 });
             } else
             {
-                if (checkFieldEpc.isEmpty() || checkFieldEpc == null)
-                {
-                    mRfidMgr.setTriggerMode(TriggerMode.BARCODE_SCAN);
-                }
-                else
-                {
-                    mRfidMgr.setTriggerMode(TriggerMode.RFID);
-//                    if (checkFieldEpc.isEmpty() || checkFieldData == null)
-//                    {
-//                        CustomToast customToast = new CustomToast(getApplicationContext(), "Leia um codigo de barras");
-//                        customToast.show();
-//                    }
-//                    else
-//                    {
-//                        int size = 24;
-//                        int bank = 1;
-//                        int startAddress = 2;
-//                        String verifyData = checkFieldData.trim().replaceAll("\n", "");
-//                        String dataToWrite = padLeft(verifyData, size);
-//                        writeTagData(checkFieldEpc, bank, startAddress, dataToWrite);
-//                    }
-                }
+                read();
+//                if (checkFieldEpc.isEmpty() || checkFieldEpc == null)
+//                {
+//                    mRfidMgr.setTriggerMode(TriggerMode.BARCODE_SCAN);
+//                }
+//                else {
+//                  read();
+//                }
             }
         }
 
@@ -413,7 +431,7 @@ public class ReadActivity extends AppCompatActivity
             mSelectedIdx = position;
             mAdapter.notifyDataSetChanged();
             String selectedItem = (String) adapterView.getItemAtPosition(position);
-            mTagToWrite.setText(selectedItem);
+            mChassiToValid.setText(selectedItem);
         }
     };
 
@@ -437,7 +455,7 @@ public class ReadActivity extends AppCompatActivity
         {
             mReader.writeTagData(epc, bank, startAddr, null, data);
             mTagToWrite.setText("");
-            mData.setText("");
+            mChassiToValid.setText("");
             mTagDataList.clear();
             stopRead();
             CustomToast customToast = new CustomToast(getApplicationContext(), "Tag gravada");
@@ -481,7 +499,7 @@ public class ReadActivity extends AppCompatActivity
     public void cleanField(View view)
     {
         String clearTag = mTagToWrite.getText().toString();
-        String clearData = mData.getText().toString();
+        String clearData = mChassiToValid.getText().toString();
         try
         {
             if (!clearData.isEmpty() || !clearTag.isEmpty() || !mTagDataList.isEmpty())
@@ -489,9 +507,10 @@ public class ReadActivity extends AppCompatActivity
                 mTagToWrite.setText("");
                 mTagToWrite.invalidate();
                 mTagToWrite.requestLayout();
-                mData.setText("");
+                mChassiToValid.setText("");
                 mTagDataList.clear();
-            } else
+            }
+            else
             {
                 mTagDataList.clear();
                 CustomToast customToast = new CustomToast(getApplicationContext(), "Campos limpos");
