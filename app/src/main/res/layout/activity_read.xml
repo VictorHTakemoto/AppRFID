@@ -27,9 +27,8 @@
                 android:layout_marginRight="16dp"
                 android:paddingLeft="5dp"
                 android:paddingRight="5dp"
-                android:onClick="clickBtnRead"
                 android:textAlignment="center"
-                android:text="Ler"/>
+                android:text="Teste"/>
 
             <Button
                 android:id="@+id/clear_fields"

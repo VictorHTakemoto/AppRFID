@@ -5,4 +5,8 @@
         android:id="@+id/settings_btn"
         android:title="Config"
         app:showAsAction="ifRoom"/>
+    <item
+        android:id="@+id/print_btn"
+        android:title="Impressao"
+        app:showAsAction="ifRoom"/>
 </menu>

@@ -6,9 +6,12 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.RippleDrawable;
 import android.hardware.TriggerEventListener;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -31,6 +34,12 @@ import com.honeywell.rfidservice.rfid.TagAdditionData;
 import com.honeywell.rfidservice.rfid.TagReadData;
 import com.honeywell.rfidservice.rfid.TagReadOption;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -49,29 +58,71 @@ public class ReadActivity extends AppCompatActivity
     private boolean mIsReadBtnClicked;
     private Button mBtnRead;
     private Button mBtnClear;
+    private Button mBtnPrint;
     private ListView mLv;
     private ArrayAdapter mAdapter;
     private int mSelectedIdx = -1;
     private TextView mTagToWrite;
     private TextView mData;
+    private String mChassiPrint;
+    private String mChassiConf;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_read);
+
         mRfidMgr = MyApplication.getInstance().rfidMgr;
         mReader = MyApplication.getInstance().mRfidReader;
-        setContentView(R.layout.activity_read);
+
         mBtnRead = findViewById(R.id.btn_read);
         mBtnClear = findViewById(R.id.clear_fields);
+        mBtnPrint = findViewById(R.id.print_btn);
+        mChassiPrint = "http://192.168.18.7:5068/Rfid/ImprimeEtiqueta/";
+        mChassiConf = "http://192.168.18.7:5068/Rfid/ConferirEtiqueta/";
+
         mLv = findViewById(R.id.lv);
         mAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, mTagDataList);
         mLv.setAdapter(mAdapter);
         mLv.setOnItemClickListener(mItemClickListenerTag);
         mTagToWrite = findViewById(R.id.select_tag);
         mData = findViewById(R.id.data_field);
-        mData.requestFocus();
+        mTagToWrite.requestFocus();
 
+
+        mBtnRead.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String chetTxt = mTagToWrite.getText().toString();
+                if (!chetTxt.isEmpty()){
+                    String chassi = "93YRBB005RJ773602";
+                    new callAPITask().execute(mChassiPrint, chassi);
+                }
+                else {
+                    CustomToast customToast = new CustomToast(getApplicationContext(), "Layer vazia");
+                    customToast.show();
+                }
+            }
+        });
+
+        mTagToWrite.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                String txt = editable.toString();
+                new callAPITask().execute(mChassiConf, txt);
+            }
+        });
     }
 
     @Override
@@ -121,6 +172,12 @@ public class ReadActivity extends AppCompatActivity
             Intent intent = new Intent(this, ConfigActivity.class);
             startActivity(intent);
             //Toast.makeText(this, "Botão clicado", Toast.LENGTH_LONG).show();
+            return true;
+        }
+        if(itemId == R.id.print_btn)
+        {
+            Intent intent = new Intent(this, PrintActivity.class);
+            startActivity(intent);
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -181,24 +238,25 @@ public class ReadActivity extends AppCompatActivity
             {
                 if (checkFieldEpc.isEmpty() || checkFieldEpc == null)
                 {
-                    read();
-                } else
+                    mRfidMgr.setTriggerMode(TriggerMode.BARCODE_SCAN);
+                }
+                else
                 {
-                    if (checkFieldData.isEmpty() || checkFieldData == null)
-                    {
-                        //onTriggerModeSwitched(TriggerMode.BARCODE_SCAN);
-                        //mRfidMgr.setTriggerMode(TriggerMode.BARCODE_SCAN);
-                        CustomToast customToast = new CustomToast(getApplicationContext(), "Leia um codigo de barras");
-                        customToast.show();
-                    } else
-                    {
-                        int size = 24;
-                        int bank = 1;
-                        int startAddress = 2;
-                        String verifyData = checkFieldData.trim().replaceAll("\n", "");
-                        String dataToWrite = padLeft(verifyData, size);
-                        writeTagData(checkFieldEpc, bank, startAddress, dataToWrite);
-                    }
+                    mRfidMgr.setTriggerMode(TriggerMode.RFID);
+//                    if (checkFieldEpc.isEmpty() || checkFieldData == null)
+//                    {
+//                        CustomToast customToast = new CustomToast(getApplicationContext(), "Leia um codigo de barras");
+//                        customToast.show();
+//                    }
+//                    else
+//                    {
+//                        int size = 24;
+//                        int bank = 1;
+//                        int startAddress = 2;
+//                        String verifyData = checkFieldData.trim().replaceAll("\n", "");
+//                        String dataToWrite = padLeft(verifyData, size);
+//                        writeTagData(checkFieldEpc, bank, startAddress, dataToWrite);
+//                    }
                 }
             }
         }
@@ -212,6 +270,72 @@ public class ReadActivity extends AppCompatActivity
     private boolean isReaderAvailable()
     {
         return mReader != null && mReader.available();
+    }
+
+    public void imp(){
+        try {
+            if (mTagToWrite != null){
+                String chassi = "93YRBB005RJ773602";
+                AsyncTask<String, Void, String> t = new callAPITask().execute("https://192.168.18.7:7015/Rfid/ImprimeEtiqueta/", chassi);
+                CustomToast customToast = new CustomToast(getApplicationContext(), "Retorno API: " + t.toString());
+                customToast.show();
+            }
+            else {
+                CustomToast customToast = new CustomToast(getApplicationContext(), "Layer vazia");
+                customToast.show();
+            }
+        } catch (Exception e) {
+            CustomToast customToast = new CustomToast(getApplicationContext(), "Layer vazia" + e.getMessage());
+            customToast.show();
+        }
+    }
+
+    private class callAPITask extends AsyncTask<String, Void, String> {
+        @Override
+        protected String doInBackground(String... params){
+            String apiUrl = params[0];
+            String chassis = params[1];
+            try {
+                URL url = new URL(apiUrl + chassis);
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("POST");
+                connection.setRequestProperty("Content-Type", "application/json");
+                connection.setDoOutput(true);
+
+                int responseCode = connection.getResponseCode();
+
+                if(responseCode == HttpURLConnection.HTTP_OK){
+                    BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                    StringBuilder response = new StringBuilder();
+                    String line;
+                    while ((line = in.readLine()) != null){
+                        response.append(line);
+                    }
+                    in.close();
+
+                    return "Requisição bem-sucedida:\n" + response;
+                } else {
+                    BufferedReader errorReader = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
+                    StringBuilder errorResponse = new StringBuilder();
+                    String errorLine;
+                    while ((errorLine = errorReader.readLine()) != null) {
+                        errorResponse.append(errorLine);
+                    }
+                    errorReader.close();
+
+                    return "Erro na resposta da API. Código: " + responseCode + "\n" + errorResponse.toString();
+                }
+            }
+            catch (IOException e){
+                e.printStackTrace();
+                return "Erro ao enviar solicitação para a API.\n" + e.getMessage();
+            }
+        }
+        @Override
+        protected void onPostExecute(String result){
+            CustomToast customToast = new CustomToast(getApplicationContext(), "Retorno API: " + result);
+            customToast.show();
+        }
     }
 
     /*private void onReadBarCode() {
