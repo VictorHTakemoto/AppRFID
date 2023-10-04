@@ -76,13 +76,12 @@ public class ReadActivity extends AppCompatActivity
 
         mRfidMgr = MyApplication.getInstance().rfidMgr;
         mReader = MyApplication.getInstance().mRfidReader;
-        mRfidMgr.setTriggerMode(TriggerMode.BARCODE_SCAN);
 
         mBtnRead = findViewById(R.id.btn_read);
         mBtnClear = findViewById(R.id.clear_fields);
         mBtnPrint = findViewById(R.id.print_btn);
-        mChassiPrint = "http://192.168.18.7:5068/Rfid/ImprimeEtiqueta/";
-        mChassiConf = "http://192.168.18.7:5068/Rfid/ConferirEtiqueta/";
+        mChassiPrint = "http://192.168.25.42:5068/Rfid/ImprimeEtiqueta/";
+        mChassiConf = "http://192.168.25.42:5068/Rfid/ConferirEtiqueta/";
 
         mLv = findViewById(R.id.lv);
         mAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, mTagDataList);
@@ -91,21 +90,28 @@ public class ReadActivity extends AppCompatActivity
         mTagToWrite = findViewById(R.id.select_tag);
         mChassiToValid = findViewById(R.id.data_field);
         mTagToWrite.requestFocus();
-        mChassiToValid.setVisibility(View.INVISIBLE);
+        //mChassiToValid.setVisibility(View.INVISIBLE);
 
 
-        mBtnRead.setOnClickListener(new View.OnClickListener() {
+//        mBtnRead.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                String chetTxt = mTagToWrite.getText().toString();
+//                if (!chetTxt.isEmpty()){
+//                    String chassi = "93YRBB005RJ773602";
+//                    new callAPITask().execute(mChassiPrint, chassi);
+//                }
+//                else {
+//                    CustomToast customToast = new CustomToast(getApplicationContext(), "Layer vazia");
+//                    customToast.show();
+//                }
+//            }
+//        });
+
+        mBtnClear.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String chetTxt = mTagToWrite.getText().toString();
-                if (!chetTxt.isEmpty()){
-                    String chassi = "93YRBB005RJ773602";
-                    new callAPITask().execute(mChassiPrint, chassi);
-                }
-                else {
-                    CustomToast customToast = new CustomToast(getApplicationContext(), "Layer vazia");
-                    customToast.show();
-                }
+                cleanField(view);
             }
         });
 
@@ -117,19 +123,18 @@ public class ReadActivity extends AppCompatActivity
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                String chassis = charSequence.toString();
-                String texto1 = mTagToWrite.getText().toString();
-                if(!texto1.isEmpty()){
-                    if((mTagToWrite.length() <= 17)){
-                        new callAPITask().execute(mChassiPrint, chassis);
-                        mTagToWrite.setText("");
+                try {
+                    String txt = charSequence.toString();
+                    if(!txt.isEmpty()){
+//                    CustomToast customToast = new CustomToast(getApplicationContext(), "Etiqueta impressa " + txt);
+//                    customToast.show();
+                        new callAPITask().execute(mChassiPrint, txt);
                         mRfidMgr.setTriggerMode(TriggerMode.RFID);
                     }
-                    else {
-                        new callAPITask().execute(mChassiConf, chassis);
-                        mTagToWrite.setText("");
-                        mRfidMgr.setTriggerMode(TriggerMode.BARCODE_SCAN);
-                    }
+                }
+                catch (Exception ex){
+                    CustomToast customToast = new CustomToast(getApplicationContext(), "Erro " + ex.getMessage());
+                    customToast.show();
                 }
             }
 
@@ -146,13 +151,13 @@ public class ReadActivity extends AppCompatActivity
 //
 //            @Override
 //            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-//
+//                String txt = charSequence.toString();
+//                new callAPITask().execute(mChassiConf, txt);
+//                mChassiToValid.setText("");
 //            }
 //
 //            @Override
 //            public void afterTextChanged(Editable editable) {
-//                String txt = editable.toString();
-//                new callAPITask().execute(mChassiConf, txt);
 //            }
 //        });
     }
@@ -266,22 +271,51 @@ public class ReadActivity extends AppCompatActivity
                         showBtn();
                     }
                 });
-            } else
+            }
+            else
             {
-                read();
-//                if (checkFieldEpc.isEmpty() || checkFieldEpc == null)
-//                {
-//                    mRfidMgr.setTriggerMode(TriggerMode.BARCODE_SCAN);
-//                }
-//                else {
-//                  read();
-//                }
+                if (checkFieldEpc.isEmpty())
+                {
+                    onTriggerModeSwitched(mRfidMgr.getTriggerMode());
+                    //mRfidMgr.setTriggerMode(TriggerMode.BARCODE_SCAN);
+                }
+                if(!checkFieldEpc.isEmpty()){
+                    read();
+//                    CustomToast customToast = new CustomToast(getApplicationContext(), "Etiqueta Validada " + checkFieldData);
+//                    customToast.show();
+                    if(!checkFieldData.isEmpty()){
+                        new callAPITask().execute(mChassiConf, checkFieldData);
+                    }
+                }
             }
         }
 
         @Override
         public void onTriggerModeSwitched(TriggerMode triggerMode)
         {
+            try {
+                String TVPrint = mTagToWrite.getText().toString();
+                String TVConfig = mChassiToValid.getText().toString();
+                if(TVPrint.isEmpty()){
+                    mRfidMgr.setTriggerMode(TriggerMode.BARCODE_SCAN);
+                }
+//                if(!TVPrint.isEmpty()){
+//                   // new callAPITask().execute(mChassiPrint, TVPrint);
+//                    CustomToast customToast = new CustomToast(getApplicationContext(), "Etiqueta Impressa" + TVPrint);
+//                    customToast.show();
+//                }
+//                if (triggerMode == TriggerMode.RFID){
+//                    if(!TVConfig.isEmpty()){
+//                        CustomToast customToast = new CustomToast(getApplicationContext(), "Etiqueta Validada " + TVConfig);
+//                        customToast.show();
+//                        //new callAPITask().execute(mChassiConf, TVConfig);
+//                    }
+//                }
+            }
+            catch (Exception e){
+                CustomToast customToast = new CustomToast(getApplicationContext(), "Erro: " + e.getMessage());
+                customToast.show();
+            }
         }
     };
 
@@ -491,23 +525,24 @@ public class ReadActivity extends AppCompatActivity
             if (mTagDataList.size() == 1)
             {
                 String getFirstValue = String.valueOf(mTagDataList.get(0));
-                mTagToWrite.setText(getFirstValue);
+                mChassiToValid.setText(getFirstValue);
             }
         }
     }
 
     public void cleanField(View view)
     {
-        String clearTag = mTagToWrite.getText().toString();
-        String clearData = mChassiToValid.getText().toString();
         try
         {
-            if (!clearData.isEmpty() || !clearTag.isEmpty() || !mTagDataList.isEmpty())
+            String clearTag = mTagToWrite.getText().toString();
+            String clearData = mChassiToValid.getText().toString();
+            if (!clearTag.isEmpty() || !clearData.isEmpty() || !mTagDataList.isEmpty())
             {
                 mTagToWrite.setText("");
                 mTagToWrite.invalidate();
                 mTagToWrite.requestLayout();
                 mChassiToValid.setText("");
+                mChassiToValid.invalidate();
                 mTagDataList.clear();
             }
             else
