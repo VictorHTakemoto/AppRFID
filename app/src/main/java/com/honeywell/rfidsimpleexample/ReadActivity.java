@@ -1,9 +1,12 @@
 package com.honeywell.rfidsimpleexample;
 
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.graphics.drawable.RippleDrawable;
 import android.hardware.TriggerEventListener;
 import android.os.AsyncTask;
@@ -58,12 +61,10 @@ public class ReadActivity extends AppCompatActivity
     private boolean mIsReadBtnClicked;
     private Button mBtnRead;
     private Button mBtnClear;
-    private Button mBtnPrint;
     private ListView mLv;
     private ArrayAdapter mAdapter;
     private int mSelectedIdx = -1;
     private TextView mTagToWrite;
-    //private TextView mData;
     private TextView mChassiToValid;
     private String mChassiPrint;
     private String mChassiConf;
@@ -79,9 +80,8 @@ public class ReadActivity extends AppCompatActivity
 
         mBtnRead = findViewById(R.id.btn_read);
         mBtnClear = findViewById(R.id.clear_fields);
-        mBtnPrint = findViewById(R.id.print_btn);
-        mChassiPrint = "http://192.168.25.42:5068/Rfid/ImprimeEtiqueta/";
-        mChassiConf = "http://192.168.25.42:5068/Rfid/ConferirEtiqueta/";
+        mChassiPrint = "http://192.168.18.14:5068/Rfid/ImprimeEtiqueta/";
+        mChassiConf = "http://192.168.18.14:5068/Rfid/ConferirEtiqueta/";
 
         mLv = findViewById(R.id.lv);
         mAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, mTagDataList);
@@ -90,23 +90,8 @@ public class ReadActivity extends AppCompatActivity
         mTagToWrite = findViewById(R.id.select_tag);
         mChassiToValid = findViewById(R.id.data_field);
         mTagToWrite.requestFocus();
-        //mChassiToValid.setVisibility(View.INVISIBLE);
 
 
-//        mBtnRead.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                String chetTxt = mTagToWrite.getText().toString();
-//                if (!chetTxt.isEmpty()){
-//                    String chassi = "93YRBB005RJ773602";
-//                    new callAPITask().execute(mChassiPrint, chassi);
-//                }
-//                else {
-//                    CustomToast customToast = new CustomToast(getApplicationContext(), "Layer vazia");
-//                    customToast.show();
-//                }
-//            }
-//        });
 
         mBtnClear.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -126,8 +111,6 @@ public class ReadActivity extends AppCompatActivity
                 try {
                     String txt = charSequence.toString();
                     if(!txt.isEmpty()){
-//                    CustomToast customToast = new CustomToast(getApplicationContext(), "Etiqueta impressa " + txt);
-//                    customToast.show();
                         new callAPITask().execute(mChassiPrint, txt);
                         mRfidMgr.setTriggerMode(TriggerMode.RFID);
                     }
@@ -143,23 +126,6 @@ public class ReadActivity extends AppCompatActivity
             }
         });
 
-//        mChassiToValid.addTextChangedListener(new TextWatcher() {
-//            @Override
-//            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-//
-//            }
-//
-//            @Override
-//            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-//                String txt = charSequence.toString();
-//                new callAPITask().execute(mChassiConf, txt);
-//                mChassiToValid.setText("");
-//            }
-//
-//            @Override
-//            public void afterTextChanged(Editable editable) {
-//            }
-//        });
     }
 
     @Override
@@ -208,7 +174,6 @@ public class ReadActivity extends AppCompatActivity
         {
             Intent intent = new Intent(this, ConfigActivity.class);
             startActivity(intent);
-            //Toast.makeText(this, "Botão clicado", Toast.LENGTH_LONG).show();
             return true;
         }
         if(itemId == R.id.print_btn)
@@ -277,12 +242,10 @@ public class ReadActivity extends AppCompatActivity
                 if (checkFieldEpc.isEmpty())
                 {
                     onTriggerModeSwitched(mRfidMgr.getTriggerMode());
-                    //mRfidMgr.setTriggerMode(TriggerMode.BARCODE_SCAN);
+
                 }
                 if(!checkFieldEpc.isEmpty()){
                     read();
-//                    CustomToast customToast = new CustomToast(getApplicationContext(), "Etiqueta Validada " + checkFieldData);
-//                    customToast.show();
                     if(!checkFieldData.isEmpty()){
                         new callAPITask().execute(mChassiConf, checkFieldData);
                     }
@@ -299,18 +262,6 @@ public class ReadActivity extends AppCompatActivity
                 if(TVPrint.isEmpty()){
                     mRfidMgr.setTriggerMode(TriggerMode.BARCODE_SCAN);
                 }
-//                if(!TVPrint.isEmpty()){
-//                   // new callAPITask().execute(mChassiPrint, TVPrint);
-//                    CustomToast customToast = new CustomToast(getApplicationContext(), "Etiqueta Impressa" + TVPrint);
-//                    customToast.show();
-//                }
-//                if (triggerMode == TriggerMode.RFID){
-//                    if(!TVConfig.isEmpty()){
-//                        CustomToast customToast = new CustomToast(getApplicationContext(), "Etiqueta Validada " + TVConfig);
-//                        customToast.show();
-//                        //new callAPITask().execute(mChassiConf, TVConfig);
-//                    }
-//                }
             }
             catch (Exception e){
                 CustomToast customToast = new CustomToast(getApplicationContext(), "Erro: " + e.getMessage());
@@ -324,23 +275,7 @@ public class ReadActivity extends AppCompatActivity
         return mReader != null && mReader.available();
     }
 
-    public void imp(){
-        try {
-            if (mTagToWrite != null){
-                String chassi = "93YRBB005RJ773602";
-                AsyncTask<String, Void, String> t = new callAPITask().execute("https://192.168.18.7:7015/Rfid/ImprimeEtiqueta/", chassi);
-                CustomToast customToast = new CustomToast(getApplicationContext(), "Retorno API: " + t.toString());
-                customToast.show();
-            }
-            else {
-                CustomToast customToast = new CustomToast(getApplicationContext(), "Layer vazia");
-                customToast.show();
-            }
-        } catch (Exception e) {
-            CustomToast customToast = new CustomToast(getApplicationContext(), "Layer vazia" + e.getMessage());
-            customToast.show();
-        }
-    }
+
 
     private class callAPITask extends AsyncTask<String, Void, String> {
         @Override
@@ -385,17 +320,25 @@ public class ReadActivity extends AppCompatActivity
         }
         @Override
         protected void onPostExecute(String result){
-            CustomToast customToast = new CustomToast(getApplicationContext(), "Retorno API: " + result);
-            customToast.show();
+            if (result.contains("Requisição bem-sucedida:")) {
+                CustomToast customToast = new CustomToast(getApplicationContext(), "PROCESSO BEM SUCEDIDO");
+                int duration = Toast.LENGTH_LONG;
+                customToast.setDuration(duration);
+                customToast.show();
+
+            }else{
+                View customView = getLayoutInflater().inflate(R.layout.alert_sucesso, null);
+                TextView tituloTextView = customView.findViewById(R.id.title);
+                tituloTextView.setText("ERRO");
+                TextView mensagemTextView = customView.findViewById(R.id.message);
+                mensagemTextView.setText(result);
+                AlertDialog alertDialog = new AlertDialog.Builder(ReadActivity.this)
+                        .setView(customView)
+                        .create();
+                alertDialog.show();
+            }
         }
     }
-
-    /*private void onReadBarCode() {
-        if(isReaderAvailable()) {
-            TriggerMode triggerMode = TriggerMode.BARCODE_SCAN;
-            System.out.println("Teste: " + triggerMode);
-        }
-    }*/
 
     private void read()
     {
