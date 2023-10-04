@@ -7,8 +7,8 @@
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/image_home"
-        android:title="onium"
-        android:icon="@drawable/ic_launcher_sem_fundo"
         android:enabled="false"
+        android:icon="@drawable/ativo_2"
+        android:title="Brasil3"
         app:showAsAction="always" />
 </menu>

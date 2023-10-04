@@ -61,7 +61,7 @@ public class ReadActivity extends AppCompatActivity
     private boolean mIsReadBtnClicked;
     private Button mBtnRead;
     private Button mBtnClear;
-    private ListView mLv;
+
     private ArrayAdapter mAdapter;
     private int mSelectedIdx = -1;
     private TextView mTagToWrite;
@@ -80,13 +80,10 @@ public class ReadActivity extends AppCompatActivity
 
         mBtnRead = findViewById(R.id.btn_read);
         mBtnClear = findViewById(R.id.clear_fields);
-        mChassiPrint = "http://192.168.18.14:5068/Rfid/ImprimeEtiqueta/";
+        mChassiPrint = "http://192.168.18.14:5068/Rfid/ImprimeEtiqueta/";//TODO: ADICIONAR DADOS EM BANCO OU VIA JSON
         mChassiConf = "http://192.168.18.14:5068/Rfid/ConferirEtiqueta/";
 
-        mLv = findViewById(R.id.lv);
-        mAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, mTagDataList);
-        mLv.setAdapter(mAdapter);
-        mLv.setOnItemClickListener(mItemClickListenerTag);
+
         mTagToWrite = findViewById(R.id.select_tag);
         mChassiToValid = findViewById(R.id.data_field);
         mTagToWrite.requestFocus();
@@ -221,8 +218,8 @@ public class ReadActivity extends AppCompatActivity
         @Override
         public void onRfidTriggered(boolean trigger)
         {
-            String checkFieldEpc = mTagToWrite.getText().toString();
-            String checkFieldData = mChassiToValid.getText().toString();
+            String checkFieldEpc = mTagToWrite.getText().toString();// CAMPO LEITURA CODIGO DE BARRAS
+            String checkFieldData = mChassiToValid.getText().toString();//CAMPO LEITURA RFID
             if (mIsReadBtnClicked || !trigger)
             {
                 mIsReadBtnClicked = false;
@@ -367,20 +364,9 @@ public class ReadActivity extends AppCompatActivity
         @Override
         public void onTagRead(final TagReadData[] t)
         {
-            synchronized (mTagDataList)
-            {
-                for (TagReadData trd : t)
-                {
-                    String epc = trd.getEpcHexStr();
+            mChassiToValid.setText(t[1].getEpcHexStr());
 
-                    if (!mTagDataList.contains(epc))
-                    {
-                        mTagDataList.add(epc);
-                    }
-                }
 
-                mHandler.sendEmptyMessage(0);
-            }
         }
     };
 

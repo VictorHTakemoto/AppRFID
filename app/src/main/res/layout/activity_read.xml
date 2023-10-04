@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:background="@drawable/background_gradient"
     android:layout_width="match_parent"
@@ -40,12 +41,6 @@
                 android:text="Limpar" />
         </LinearLayout>
     </LinearLayout>
-    <ListView
-        android:id="@+id/lv"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_above="@id/edit_tag_layout" />
 
     <LinearLayout
         android:id="@+id/edit_tag_layout"
@@ -54,21 +49,37 @@
         android:layout_above="@+id/layout_read_btn"
         android:orientation="vertical">
 
-        <EditText
-            android:id="@+id/select_tag"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Selecione tag epc"
-            android:backgroundTint="@color/textColor"/>
-
-        <EditText
-            android:id="@+id/data_field"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Código de Barras"
-            android:backgroundTint="@color/textColor">
-
-        </EditText>
     </LinearLayout>
+
+    <ImageView
+        android:id="@+id/imageView2"
+        android:layout_width="164dp"
+        android:layout_height="122dp"
+        app:srcCompat="@drawable/ativo_3"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="10dp"/>
+
+    <EditText
+        android:id="@+id/select_tag"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@color/textColor"
+        android:hint="Leia o Codigo de barras"
+        android:textSize="25dp"
+
+        android:layout_marginTop="200dp"
+        />
+
+    <EditText
+        android:id="@+id/data_field"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/select_tag"
+        android:layout_marginTop="20dp"
+        android:backgroundTint="@color/textColor"
+        android:textSize="25dp"
+        android:hint="Código de Barras">
+
+    </EditText>
 
 </RelativeLayout>
