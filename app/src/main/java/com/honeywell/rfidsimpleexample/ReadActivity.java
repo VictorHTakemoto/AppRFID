@@ -76,6 +76,7 @@ public class ReadActivity extends AppCompatActivity
     private String mChassiPrint;
     private String mChassiConf;
     private int etapa = 0;
+    private  boolean busy = false;
 
 
     @Override
@@ -199,7 +200,7 @@ public class ReadActivity extends AppCompatActivity
             String checkFieldEpc = mTagToWrite.getText().toString();// CAMPO LEITURA CODIGO DE BARRAS
             String checkFieldData = mChassiToValid.getText().toString();//CAMPO LEITURA RFID
 
-           if(etapa ==1 && !checkFieldData.isEmpty())
+           if(etapa ==1 && !checkFieldData.isEmpty()&&!busy)
             {
                 conferirEtiqueta(checkFieldData,chassisHexa);
             }
@@ -295,11 +296,13 @@ public class ReadActivity extends AppCompatActivity
                         mTitulo.setText("Confira a gravação da TAG");
                     }
                 });
-                CustomToast customToast = new CustomToast(getApplicationContext(), "PROCESSO BEM SUCEDIDO ! CHASSIS: " + chassisCodBarras );
+
+                CustomToast customToast = new CustomToast(getApplicationContext(), "PROCESSO BEM SUCEDIDO ! CHASSIS: " + chassisCodBarras,true );
+                customToast.setDuration(Toast.LENGTH_SHORT);
                 customToast.show();
 
             }else{
-
+                cleanField();
                 customAlertDialog("ERRO",result);
             }
         }
@@ -332,8 +335,9 @@ public class ReadActivity extends AppCompatActivity
         @Override
         public void onTagRead(final TagReadData[] t)
         {
-
-            mChassiToValid.setText(t[1].getEpcHexStr());
+            if(!busy) {
+                mChassiToValid.setText(t[1].getEpcHexStr());
+            }
         }
     };
 
@@ -356,7 +360,10 @@ public class ReadActivity extends AppCompatActivity
 
     public static class CustomToast extends Toast
     {
-        public CustomToast(Context context, String message)
+        public CustomToast(Context context, String message) {
+            this(context, message, false);
+        }
+        public CustomToast(Context context, String message,boolean fundoAmarelo)
         {
             super(context);
 
@@ -365,12 +372,18 @@ public class ReadActivity extends AppCompatActivity
 
             TextView textView = view.findViewById(R.id.toast_text);
             textView.setText(message);
-
+            if(fundoAmarelo){
+                textView.setBackgroundColor(Color.parseColor("#FFFF00"));
+            }else{
+                textView.setBackgroundColor(Color.parseColor("#008000"));
+            }
             setView(view);
             setDuration(Toast.LENGTH_LONG);
             setGravity(Gravity.BOTTOM,0,0);
         }
     }
+
+
     public void customAlertDialog(String title, String message) {
         // Inflar o layout personalizado do AlertDialog
         View customView = getLayoutInflater().inflate(R.layout.alert_sucesso, null);
@@ -403,25 +416,31 @@ public class ReadActivity extends AppCompatActivity
     }
 
     public void conferirEtiqueta (String chassisLido,String ChassisHexa){
+        try {
+            busy = true;
+            if (chassisLido.equals(ChassisHexa)) {
+                CustomToast customToast = new CustomToast(getApplicationContext(), "ETIQUETA CONFERIDA COM SUCESSO!");
+                customToast.show();
+                Handler handler = new Handler(Looper.getMainLooper());
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        // Chama a função cleanField() após 2 segundos (2000 milissegundos)
+                        cleanField();
+                    }
+                }, 3500); // Atraso de 2000 milissegundos (2 segundos)
 
-        if(chassisLido.equals(ChassisHexa)){
+            } else {
 
-            mRfidMgr.setTriggerMode(TriggerMode.BARCODE_SCAN);
-            CustomToast customToast = new CustomToast(getApplicationContext(), "ETIQUETA CONFERIDA COM SUCESSO!");
-            customToast.show();
-            Handler handler = new Handler(Looper.getMainLooper());
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    // Chama a função cleanField() após 2 segundos (2000 milissegundos)
-                    cleanField();
-                }
-            }, 4000); // Atraso de 2000 milissegundos (2 segundos)
-
-        }else{
-            mChassiToValid.setText("");
-            mTagDataList.clear();
-            customAlertDialog("Erro", "Tag não corresponde. Tente novamente ou refaça o processo: Tag lida: " + chassisHexa );
+                customAlertDialog("Erro", "Tag não corresponde. Tente novamente ou refaça o processo: Tag lida: " + chassisHexa);
+                mChassiToValid.setText("");
+                mTagDataList.clear();
+                busy = false;
+                chassisLido = "";
+            }
+        }catch (Exception e){
+            busy = false;
+            customAlertDialog("Excessão", "Houve uma excessão durante a conferência - "+ e.getMessage());
         }
 
     }
@@ -445,7 +464,9 @@ public class ReadActivity extends AppCompatActivity
                 mChassiToValid.invalidate();
                 mTagDataList.clear();
                 mRfidMgr.setTriggerMode(TriggerMode.BARCODE_SCAN);
+                chassisHexa = "";
                 etapa = 0;
+                busy = false;
             }
             else
             {
