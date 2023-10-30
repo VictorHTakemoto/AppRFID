@@ -1,14 +1,9 @@
 package com.honeywell.rfidsimpleexample;
 
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.RippleDrawable;
-import android.hardware.TriggerEventListener;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -20,21 +15,20 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.honeywell.rfidservice.EventListener;
 import com.honeywell.rfidservice.RfidManager;
 import com.honeywell.rfidservice.TriggerMode;
 import com.honeywell.rfidservice.rfid.OnTagReadListener;
 import com.honeywell.rfidservice.rfid.RfidReader;
-import com.honeywell.rfidservice.rfid.RfidReaderException;
 import com.honeywell.rfidservice.rfid.TagAdditionData;
 import com.honeywell.rfidservice.rfid.TagReadData;
 import com.honeywell.rfidservice.rfid.TagReadOption;
@@ -44,31 +38,18 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 
 public class ReadActivity extends AppCompatActivity
 {
     private RfidManager mRfidMgr;
     private RfidReader mReader;
     private List mTagDataList = new ArrayList();
-
     private boolean mIsReadBtnClicked;
-
     private Button mBtnClear;
-
-    private ArrayAdapter mAdapter;
-    private int mSelectedIdx = -1;
     private TextView mTagToWrite;
     private TextView mTitulo;
-
     private TextView mCampoChassis;
     private String chassisHexa;
     private String chassisCodBarras;
@@ -85,22 +66,24 @@ public class ReadActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_read);
 
+        //Gerenciadores RFID APK Honeywell
         mRfidMgr = MyApplication.getInstance().rfidMgr;
         mReader = MyApplication.getInstance().mRfidReader;
 
+        //Views
         mBtnClear = findViewById(R.id.clear_fields);
-        mChassiPrint = "http://192.168.25.28:5068/Rfid/ImprimeEtiqueta/";//TODO: ADICIONAR DADOS EM BANCO OU VIA JSON
-        mChassiConf = "http://192.168.25.28:5068/Rfid/ConferirEtiqueta/";
-
-        mRfidMgr.setTriggerMode(TriggerMode.BARCODE_SCAN);
         mTitulo = findViewById(R.id.label_titulo);
-
-
         mCampoChassis = findViewById(R.id.campoChassis);
-        mCampoChassis.setText("");
         mTagToWrite = findViewById(R.id.select_tag);
-        mTagToWrite.setHint("Leia o codigo de barras");
         mChassiToValid = findViewById(R.id.data_field);
+
+        //Link API
+        mChassiPrint = "http://192.168.25.28:5068/Rfid/ImprimeEtiqueta/";//TODO: ADICIONAR DADOS EM BANCO OU VIA JSON
+
+        //Inicialização De variáveis:
+        mRfidMgr.setTriggerMode(TriggerMode.BARCODE_SCAN);
+        mCampoChassis.setText("");
+        mTagToWrite.setHint("Leia o codigo de barras");
         mChassiToValid.setHint("Leia a TAG");
         mChassiToValid.setVisibility(View.INVISIBLE);
         mTagToWrite.requestFocus();
@@ -121,6 +104,7 @@ public class ReadActivity extends AppCompatActivity
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
                 try {
+                    //Ao ter alteração no texto, chamará a api para impressão da Etiqueta
                     String txt = charSequence.toString();
                     if(!txt.isEmpty()){
                         new callAPITask().execute(mChassiPrint, txt);
@@ -197,11 +181,15 @@ public class ReadActivity extends AppCompatActivity
         @Override
         public void onRfidTriggered(boolean trigger)
         {
+            //Evento de apertar o gatilho do RFID
             String checkFieldEpc = mTagToWrite.getText().toString();// CAMPO LEITURA CODIGO DE BARRAS
             String checkFieldData = mChassiToValid.getText().toString();//CAMPO LEITURA RFID
 
+            //Validando se a etapa é =1, ou seja ja passou pela chamada da API para impressão, se o campo nao esta vazio e se esta como ocupado.
+            //A variavel Busy serve para que enquanto o sistema tiver validando uma tag RFID não consiga ler outra.
            if(etapa ==1 && !checkFieldData.isEmpty()&&!busy)
             {
+                //chama o metodo que faz a validação se a Tag foi gravada corretamente
                 conferirEtiqueta(checkFieldData,chassisHexa);
             }
 
@@ -220,6 +208,7 @@ public class ReadActivity extends AppCompatActivity
             }
             else
             {
+                //Serve para so ler RFID se o campo de codigo de barras estiver vazio.
                 if(!checkFieldEpc.isEmpty()){
                  read();
                }
@@ -239,7 +228,7 @@ public class ReadActivity extends AppCompatActivity
     }
 
 
-
+    //Método para chamar a API, asyncrono
     private class callAPITask extends AsyncTask<String, Void, String> {
         @Override
         protected String doInBackground(String... params){
@@ -262,7 +251,7 @@ public class ReadActivity extends AppCompatActivity
                         response.append(line);
                     }
                     in.close();
-                        etapa=1;
+                        etapa=1; //Muda a etapa para validar que ja passou pela parte de impressão da etiqueta.
                         return "Requisição bem-sucedida: impressao\n" + response;
 
                 } else {
@@ -284,15 +273,18 @@ public class ReadActivity extends AppCompatActivity
         @Override
         protected void onPostExecute(String result){
             if (result.contains("Requisição bem-sucedida:")) {
+                //Se a solicitação de certo, muda o gatilho para RFID, para validar a gravação da TAG
                 mRfidMgr.setTriggerMode(TriggerMode.RFID);
-                chassisHexa = result.substring(102,132)+"00";
-                chassisCodBarras = result.substring(68,85);
+                chassisHexa = result.substring(102,132)+"00"; //Pega a informação retornada da API do chassis Gravado, ja convertida para HexaDecimal
+                chassisCodBarras = result.substring(68,85); // Pega a informação de qual codigo de barras foi utilzado
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        //Muda o layout da Tela, tornado o campo de codigo de barras invisivel e o de RFID visivel
                         mTagToWrite.setVisibility(View.INVISIBLE);
                         mChassiToValid.setVisibility(View.VISIBLE);
                         mCampoChassis.setText(chassisCodBarras);
+                        //Muda o texto titulo da tela
                         mTitulo.setText("Confira a gravação da TAG");
                     }
                 });
@@ -312,10 +304,11 @@ public class ReadActivity extends AppCompatActivity
     {
         if (isReaderAvailable())
         {
+            //Metodo para ler a tag
             mTagDataList.clear();
             mReader.setOnTagReadListener(dataListener);
             mReader.read(TagAdditionData.get("None"), new TagReadOption());
-            mRfidMgr.setBeeper(false, 1, 2);
+            mRfidMgr.setBeeper(true, 1, 2);
         }
     }
 
@@ -341,24 +334,7 @@ public class ReadActivity extends AppCompatActivity
         }
     };
 
-    private Handler mHandler = new Handler()
-    {
-        @Override
-        public void handleMessage(Message msg)
-        {
-            super.handleMessage(msg);
-
-            switch (msg.what)
-            {
-                case 0:
-                    mAdapter.notifyDataSetChanged();
-                    break;
-            }
-        }
-    };
-
-
-    public static class CustomToast extends Toast
+    public static class CustomToast extends Toast //Metodo para criar Toast personalisada. atento ao parametro booleano Yellows, que se marcado como 'true' deixa o backgorud do toast amarelo
     {
         public CustomToast(Context context, String message) {
             this(context, message, false);
@@ -383,7 +359,7 @@ public class ReadActivity extends AppCompatActivity
         }
     }
 
-
+    //Cria a caixa de dialogo vermelha, caso algo der errado.
     public void customAlertDialog(String title, String message) {
         // Inflar o layout personalizado do AlertDialog
         View customView = getLayoutInflater().inflate(R.layout.alert_sucesso, null);
@@ -415,9 +391,9 @@ public class ReadActivity extends AppCompatActivity
         }
     }
 
-    public void conferirEtiqueta (String chassisLido,String ChassisHexa){
+    public void conferirEtiqueta (String chassisLido,String ChassisHexa){ //Metodo para conferir etiqueta gravada
         try {
-            busy = true;
+            busy = true; //Deixa como busy para que so seja chamado novamente esse metodo apos o processo ser concluido
             if (chassisLido.equals(ChassisHexa)) {
                 CustomToast customToast = new CustomToast(getApplicationContext(), "ETIQUETA CONFERIDA COM SUCESSO!");
                 customToast.show();
@@ -428,14 +404,14 @@ public class ReadActivity extends AppCompatActivity
                         // Chama a função cleanField() após 2 segundos (2000 milissegundos)
                         cleanField();
                     }
-                }, 3500); // Atraso de 2000 milissegundos (2 segundos)
+                }, 3500); // Atraso de 2000 milissegundos
 
             } else {
 
                 customAlertDialog("Erro", "Tag não corresponde. Tente novamente ou refaça o processo: Tag lida: " + chassisHexa);
                 mChassiToValid.setText("");
                 mTagDataList.clear();
-                busy = false;
+                busy = false; //Torna a variavel como false novamente para o metodo poder ser requisitado
                 chassisLido = "";
             }
         }catch (Exception e){
@@ -444,7 +420,7 @@ public class ReadActivity extends AppCompatActivity
         }
 
     }
-    public void cleanField()
+    public void cleanField() //metodo para resetar o formulario, e zerar os campos
     {
         try
         {
